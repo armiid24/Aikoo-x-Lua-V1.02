@@ -262,7 +262,7 @@ local function moveAllSpawnToPlayer()
 
     local count = 0
     for _, obj in ipairs(workspace:GetDescendants()) do
-        if obj:IsA("SpawnLocation") or (obj:IsA("BasePart") and obj.Name == "SpawnLocation") then
+        if obj:IsA("SpawnLocation") or (obj:IsA("BasePart") and (obj.Name == "SpawnLocation" or obj.Name == "GeneratorPoint1" or obj.Name == "GeneratorPoint2" or obj.Name == "GeneratorPoint3" or obj.Name == "GeneratorPoint4")) then
             if not originalSpawnPositions[obj] then
                 originalSpawnPositions[obj] = obj.CFrame
             end
