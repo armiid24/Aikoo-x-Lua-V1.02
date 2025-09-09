@@ -911,6 +911,88 @@ end)
     end)
 end
 
+-- 🔧 Search & Move Objek di LogConsolePage
+
+local originalPositions = {}
+
+-- Frame container
+local Container = Instance.new("Frame", LogConsolePage)
+Container.Size = UDim2.new(1, 0, 0, 80)
+Container.BackgroundTransparency = 1
+Container.LayoutOrder = 1
+
+local UIList = Instance.new("UIListLayout", Container)
+UIList.FillDirection = Enum.FillDirection.Vertical
+UIList.Padding = UDim.new(0, 6)
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Search box
+local SearchBox = Instance.new("TextBox", Container)
+SearchBox.Size = UDim2.new(1, 0, 0, 35)
+SearchBox.PlaceholderText = "🔎 Nama objek..."
+SearchBox.Font = Enum.Font.Gotham
+SearchBox.Text = ""
+SearchBox.ClearTextOnFocus = false
+SearchBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", SearchBox).CornerRadius = UDim.new(0, 6)
+
+-- Tombol Move
+local MoveBtn = Instance.new("TextButton", Container)
+MoveBtn.Size = UDim2.new(1, 0, 0, 35)
+MoveBtn.Text = "📍 Move Objek"
+MoveBtn.Font = Enum.Font.Gotham
+MoveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MoveBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+Instance.new("UICorner", MoveBtn).CornerRadius = UDim.new(0, 6)
+
+-- Tombol Reset
+local ResetBtn = Instance.new("TextButton", Container)
+ResetBtn.Size = UDim2.new(1, 0, 0, 35)
+ResetBtn.Text = "🔁 Reset Objek"
+ResetBtn.Font = Enum.Font.Gotham
+ResetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ResetBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Instance.new("UICorner", ResetBtn).CornerRadius = UDim.new(0, 6)
+
+-- Fungsi Move
+MoveBtn.MouseButton1Click:Connect(function()
+    local keyword = SearchBox.Text:lower()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not root or keyword == "" then return end
+
+    local count = 0
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.Name:lower():find(keyword) then
+            if not originalPositions[obj] then
+                originalPositions[obj] = obj.CFrame
+            end
+            obj.CFrame = root.CFrame + Vector3.new(0, 5 + count * 2, 0)
+            count = count + 1
+        end
+    end
+
+    MoveBtn.Text = "Moved " .. count .. " Objek ✅"
+    task.delay(2, function()
+        MoveBtn.Text = "📍 Move Objek"
+    end)
+end)
+
+-- Fungsi Reset
+ResetBtn.MouseButton1Click:Connect(function()
+    local count = 0
+    for obj, cframe in pairs(originalPositions) do
+        if obj and obj:IsA("BasePart") then
+            obj.CFrame = cframe
+            count = count + 1
+        end
+    end
+
+    ResetBtn.Text = "Reset " .. count .. " Objek ✅"
+    task.delay(2, function()
+        ResetBtn.Text = "🔁 Reset Objek"
+    end)
+end)
 
 
 
