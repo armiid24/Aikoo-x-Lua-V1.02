@@ -1140,6 +1140,28 @@ KillBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
+local currentPlayers = {}
+
+local RefreshBtn = Instance.new("TextButton", Container)
+RefreshBtn.Size = UDim2.new(1, 0, 0, 35)
+RefreshBtn.Text = "🔄 Refresh Player List"
+RefreshBtn.Font = Enum.Font.Gotham
+RefreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RefreshBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+Instance.new("UICorner", RefreshBtn).CornerRadius = UDim.new(0, 6)
+
+RefreshBtn.MouseButton1Click:Connect(function()
+    currentPlayers = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            table.insert(currentPlayers, player)
+        end
+    end
+    RefreshBtn.Text = "✅ Player List Updated (" .. #currentPlayers .. ")"
+    task.delay(2, function()
+        RefreshBtn.Text = "🔄 Refresh Player List"
+    end)
+end)
 
 
 
