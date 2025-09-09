@@ -966,7 +966,7 @@ Instance.new("UICorner", InteractBtn).CornerRadius = UDim.new(0, 6)
 
 
 
--- Fungsi Move
+-- Fungsi Move (versi fix)
 MoveBtn.MouseButton1Click:Connect(function()
     local keyword = SearchBox.Text:lower()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -975,11 +975,20 @@ MoveBtn.MouseButton1Click:Connect(function()
     local count = 0
     for _, obj in ipairs(workspace:GetDescendants()) do
         if obj:IsA("BasePart") and obj.Name:lower():find(keyword) then
-            if not originalPositions[obj] then
-                originalPositions[obj] = obj.CFrame
+            local parent = obj:IsA("Model") and obj or obj.Parent
+            if parent and parent:IsA("Model") and parent.PrimaryPart then
+                if not originalPositions[parent] then
+                    originalPositions[parent] = parent:GetPivot()
+                end
+                parent:PivotTo(root.CFrame + Vector3.new(0, 5 + count * 2, 0))
+                count = count + 1
+            elseif obj:IsA("BasePart") then
+                if not originalPositions[obj] then
+                    originalPositions[obj] = obj.CFrame
+                end
+                obj.CFrame = root.CFrame + Vector3.new(0, 5 + count * 2, 0)
+                count = count + 1
             end
-            obj.CFrame = root.CFrame + Vector3.new(0, 5 + count * 2, 0)
-            count = count + 1
         end
     end
 
@@ -988,6 +997,7 @@ MoveBtn.MouseButton1Click:Connect(function()
         MoveBtn.Text = "📍 Move Objek"
     end)
 end)
+
 
 -- Fungsi Reset
 ResetBtn.MouseButton1Click:Connect(function()
