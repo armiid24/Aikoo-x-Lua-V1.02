@@ -911,22 +911,24 @@ end)
     end)
 end
 
--- 🔧 Search & Move Objek di LogConsolePage
+-- 🔧 Search & Control Objek di LogConsolePage
 
 local originalPositions = {}
+local interactEnabled = true
 
 -- Frame container
 local Container = Instance.new("Frame", LogConsolePage)
-Container.Size = UDim2.new(1, 0, 0, 80)
+Container.Size = UDim2.new(1, 0, 0, 180)
 Container.BackgroundTransparency = 1
 Container.LayoutOrder = 1
+Container.Name = "SearchControlContainer"
 
 local UIList = Instance.new("UIListLayout", Container)
 UIList.FillDirection = Enum.FillDirection.Vertical
 UIList.Padding = UDim.new(0, 6)
 UIList.SortOrder = Enum.SortOrder.LayoutOrder
 
--- Search box
+-- 🔎 Search box
 local SearchBox = Instance.new("TextBox", Container)
 SearchBox.Size = UDim2.new(1, 0, 0, 35)
 SearchBox.PlaceholderText = "🔎 Nama objek..."
@@ -937,7 +939,22 @@ SearchBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 Instance.new("UICorner", SearchBox).CornerRadius = UDim.new(0, 6)
 
--- Tombol Move
+-- 🟢 Toggle Interact
+local InteractToggle = Instance.new("TextButton", Container)
+InteractToggle.Size = UDim2.new(1, 0, 0, 35)
+InteractToggle.Text = "🟢 Interact: ON"
+InteractToggle.Font = Enum.Font.Gotham
+InteractToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+InteractToggle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+Instance.new("UICorner", InteractToggle).CornerRadius = UDim.new(0, 6)
+
+InteractToggle.MouseButton1Click:Connect(function()
+    interactEnabled = not interactEnabled
+    InteractToggle.Text = interactEnabled and "🟢 Interact: ON" or "🔴 Interact: OFF"
+    InteractToggle.BackgroundColor3 = interactEnabled and Color3.fromRGB(100, 100, 100) or Color3.fromRGB(60, 60, 60)
+end)
+
+-- 📍 Tombol Move
 local MoveBtn = Instance.new("TextButton", Container)
 MoveBtn.Size = UDim2.new(1, 0, 0, 35)
 MoveBtn.Text = "📍 Move Objek"
@@ -946,7 +963,7 @@ MoveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 MoveBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 Instance.new("UICorner", MoveBtn).CornerRadius = UDim.new(0, 6)
 
--- Tombol Reset
+-- 🔁 Tombol Reset
 local ResetBtn = Instance.new("TextButton", Container)
 ResetBtn.Size = UDim2.new(1, 0, 0, 35)
 ResetBtn.Text = "🔁 Reset Objek"
@@ -955,7 +972,7 @@ ResetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ResetBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 Instance.new("UICorner", ResetBtn).CornerRadius = UDim.new(0, 6)
 
--- Tombol Interact
+-- 🛠️ Tombol Interact
 local InteractBtn = Instance.new("TextButton", Container)
 InteractBtn.Size = UDim2.new(1, 0, 0, 35)
 InteractBtn.Text = "🛠️ Interact Objek"
@@ -964,9 +981,7 @@ InteractBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 InteractBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 Instance.new("UICorner", InteractBtn).CornerRadius = UDim.new(0, 6)
 
-
-
--- Fungsi Move (versi fix)
+-- 📦 Fungsi Move
 MoveBtn.MouseButton1Click:Connect(function()
     local keyword = SearchBox.Text:lower()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -981,7 +996,7 @@ MoveBtn.MouseButton1Click:Connect(function()
                     originalPositions[parent] = parent:GetPivot()
                 end
                 parent:PivotTo(root.CFrame + Vector3.new(0, 5 + count * 2, 0))
-                count = count + 1
+                count += 1
             elseif obj:IsA("BasePart") then
                 if not originalPositions[obj] then
                     originalPositions[obj] = obj.CFrame
@@ -998,12 +1013,14 @@ MoveBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
-
--- Fungsi Reset
+-- 🔄 Fungsi Reset
 ResetBtn.MouseButton1Click:Connect(function()
     local count = 0
     for obj, cframe in pairs(originalPositions) do
-        if obj and obj:IsA("BasePart") then
+        if obj:IsA("Model") then
+            obj:PivotTo(cframe)
+            count = count + 1
+        elseif obj:IsA("BasePart") then
             obj.CFrame = cframe
             count = count + 1
         end
@@ -1015,15 +1032,27 @@ ResetBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- Fungsi Interact
+-- 🧠 Fungsi Interact
 InteractBtn.MouseButton1Click:Connect(function()
+    if not interactEnabled then return end
     local keyword = SearchBox.Text:lower()
     if keyword == "" then return end
 
     local count = 0
     for _, obj in ipairs(workspace:GetDescendants()) do
         if obj:IsA("BasePart") and obj.Name:lower():find(keyword) then
-            -- Interact via ClickDetector
+            for _, prompt in ipairs(obj:GetDescendants()) do
+                if prompt:IsA("ProximityPrompt") then
+                    pcall(function()
+                        prompt.MaxActivationDistance = math.huge
+                        prompt:InputHoldBegin()
+                        task.wait(0.2)
+                        prompt:InputHoldEnd()
+                        count = count + 1
+                    end)
+                end
+            end
+
             local click = obj:FindFirstChildOfClass("ClickDetector")
             if click then
                 pcall(function()
@@ -1032,18 +1061,6 @@ InteractBtn.MouseButton1Click:Connect(function()
                 end)
             end
 
-            -- Interact via ProximityPrompt
-            local prompt = obj:FindFirstChildOfClass("ProximityPrompt")
-            if prompt then
-                pcall(function()
-                    prompt:InputHoldBegin()
-                    task.wait(0.2)
-                    prompt:InputHoldEnd()
-                    count = count + 1
-                end)
-            end
-
-            -- Interact via RemoteEvent (optional)
             local remote = obj:FindFirstChildOfClass("RemoteEvent")
             if remote then
                 pcall(function()
@@ -1059,6 +1076,7 @@ InteractBtn.MouseButton1Click:Connect(function()
         InteractBtn.Text = "🛠️ Interact Objek"
     end)
 end)
+
 
 
 
