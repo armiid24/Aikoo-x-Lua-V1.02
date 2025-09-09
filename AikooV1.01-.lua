@@ -955,6 +955,17 @@ ResetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ResetBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 Instance.new("UICorner", ResetBtn).CornerRadius = UDim.new(0, 6)
 
+-- Tombol Interact
+local InteractBtn = Instance.new("TextButton", Container)
+InteractBtn.Size = UDim2.new(1, 0, 0, 35)
+InteractBtn.Text = "🛠️ Interact Objek"
+InteractBtn.Font = Enum.Font.Gotham
+InteractBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+InteractBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+Instance.new("UICorner", InteractBtn).CornerRadius = UDim.new(0, 6)
+
+
+
 -- Fungsi Move
 MoveBtn.MouseButton1Click:Connect(function()
     local keyword = SearchBox.Text:lower()
@@ -994,7 +1005,50 @@ ResetBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
+-- Fungsi Interact
+InteractBtn.MouseButton1Click:Connect(function()
+    local keyword = SearchBox.Text:lower()
+    if keyword == "" then return end
 
+    local count = 0
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.Name:lower():find(keyword) then
+            -- Interact via ClickDetector
+            local click = obj:FindFirstChildOfClass("ClickDetector")
+            if click then
+                pcall(function()
+                    click:Click()
+                    count = count + 1
+                end)
+            end
+
+            -- Interact via ProximityPrompt
+            local prompt = obj:FindFirstChildOfClass("ProximityPrompt")
+            if prompt then
+                pcall(function()
+                    prompt:InputHoldBegin()
+                    task.wait(0.2)
+                    prompt:InputHoldEnd()
+                    count = count + 1
+                end)
+            end
+
+            -- Interact via RemoteEvent (optional)
+            local remote = obj:FindFirstChildOfClass("RemoteEvent")
+            if remote then
+                pcall(function()
+                    remote:FireServer()
+                    count = count + 1
+                end)
+            end
+        end
+    end
+
+    InteractBtn.Text = "Interacted " .. count .. " Objek ✅"
+    task.delay(2, function()
+        InteractBtn.Text = "🛠️ Interact Objek"
+    end)
+end)
 
 
 
