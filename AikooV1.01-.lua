@@ -911,24 +911,26 @@ end)
     end)
 end
 
--- 🔧 Search & Control Objek di LogConsolePage
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
 
 local originalPositions = {}
 local interactEnabled = true
 
--- Frame container
+-- Container
 local Container = Instance.new("Frame", LogConsolePage)
-Container.Size = UDim2.new(1, 0, 0, 180)
+Container.Size = UDim2.new(1, 0, 0, 220)
 Container.BackgroundTransparency = 1
 Container.LayoutOrder = 1
-Container.Name = "SearchControlContainer"
+Container.Name = "LogConsoleTools"
 
 local UIList = Instance.new("UIListLayout", Container)
 UIList.FillDirection = Enum.FillDirection.Vertical
 UIList.Padding = UDim.new(0, 6)
 UIList.SortOrder = Enum.SortOrder.LayoutOrder
 
--- 🔎 Search box
+-- 🔎 Search Box
 local SearchBox = Instance.new("TextBox", Container)
 SearchBox.Size = UDim2.new(1, 0, 0, 35)
 SearchBox.PlaceholderText = "🔎 Nama objek..."
@@ -954,7 +956,7 @@ InteractToggle.MouseButton1Click:Connect(function()
     InteractToggle.BackgroundColor3 = interactEnabled and Color3.fromRGB(100, 100, 100) or Color3.fromRGB(60, 60, 60)
 end)
 
--- 📍 Tombol Move
+-- 📍 Move Button
 local MoveBtn = Instance.new("TextButton", Container)
 MoveBtn.Size = UDim2.new(1, 0, 0, 35)
 MoveBtn.Text = "📍 Move Objek"
@@ -963,25 +965,6 @@ MoveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 MoveBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 Instance.new("UICorner", MoveBtn).CornerRadius = UDim.new(0, 6)
 
--- 🔁 Tombol Reset
-local ResetBtn = Instance.new("TextButton", Container)
-ResetBtn.Size = UDim2.new(1, 0, 0, 35)
-ResetBtn.Text = "🔁 Reset Objek"
-ResetBtn.Font = Enum.Font.Gotham
-ResetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ResetBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-Instance.new("UICorner", ResetBtn).CornerRadius = UDim.new(0, 6)
-
--- 🛠️ Tombol Interact
-local InteractBtn = Instance.new("TextButton", Container)
-InteractBtn.Size = UDim2.new(1, 0, 0, 35)
-InteractBtn.Text = "🛠️ Interact Objek"
-InteractBtn.Font = Enum.Font.Gotham
-InteractBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-InteractBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-Instance.new("UICorner", InteractBtn).CornerRadius = UDim.new(0, 6)
-
--- 📦 Fungsi Move
 MoveBtn.MouseButton1Click:Connect(function()
     local keyword = SearchBox.Text:lower()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -996,7 +979,7 @@ MoveBtn.MouseButton1Click:Connect(function()
                     originalPositions[parent] = parent:GetPivot()
                 end
                 parent:PivotTo(root.CFrame + Vector3.new(0, 5 + count * 2, 0))
-                count += 1
+                count = count + 1
             elseif obj:IsA("BasePart") then
                 if not originalPositions[obj] then
                     originalPositions[obj] = obj.CFrame
@@ -1013,7 +996,15 @@ MoveBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- 🔄 Fungsi Reset
+-- 🔁 Reset Button
+local ResetBtn = Instance.new("TextButton", Container)
+ResetBtn.Size = UDim2.new(1, 0, 0, 35)
+ResetBtn.Text = "🔁 Reset Objek"
+ResetBtn.Font = Enum.Font.Gotham
+ResetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ResetBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Instance.new("UICorner", ResetBtn).CornerRadius = UDim.new(0, 6)
+
 ResetBtn.MouseButton1Click:Connect(function()
     local count = 0
     for obj, cframe in pairs(originalPositions) do
@@ -1032,7 +1023,15 @@ ResetBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- 🧠 Fungsi Interact
+-- 🛠️ Interact Button
+local InteractBtn = Instance.new("TextButton", Container)
+InteractBtn.Size = UDim2.new(1, 0, 0, 35)
+InteractBtn.Text = "🛠️ Interact Objek"
+InteractBtn.Font = Enum.Font.Gotham
+InteractBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+InteractBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+Instance.new("UICorner", InteractBtn).CornerRadius = UDim.new(0, 6)
+
 InteractBtn.MouseButton1Click:Connect(function()
     if not interactEnabled then return end
     local keyword = SearchBox.Text:lower()
@@ -1076,6 +1075,71 @@ InteractBtn.MouseButton1Click:Connect(function()
         InteractBtn.Text = "🛠️ Interact Objek"
     end)
 end)
+
+-- 🔧 Auto Repair Generator
+local RepairBtn = Instance.new("TextButton", Container)
+RepairBtn.Size = UDim2.new(1, 0, 0, 35)
+RepairBtn.Text = "🔧 Auto Repair Generator"
+RepairBtn.Font = Enum.Font.Gotham
+RepairBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RepairBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+Instance.new("UICorner", RepairBtn).CornerRadius = UDim.new(0, 6)
+
+RepairBtn.MouseButton1Click:Connect(function()
+    local remote = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes.Generator:FindFirstChild("RepairEvent")
+    if not remote then RepairBtn.Text = "❌ Remote Not Found"; return end
+
+    local count = 0
+    for _, gen in ipairs(workspace:GetDescendants()) do
+        if gen:IsA("BasePart") and gen.Name:lower():find("generator") then
+            pcall(function()
+                remote:FireServer(gen)
+                count = count + 1
+            end)
+        end
+    end
+
+    RepairBtn.Text = "Repaired " .. count .. " Generator ✅"
+    task.delay(2, function()
+        RepairBtn.Text = "🔧 Auto Repair Generator"
+    end)
+end)
+
+-- ☠️ Kill All Players (FrenzyHitEvent)
+local KillBtn = Instance.new("TextButton", Container)
+KillBtn.Size = UDim2.new(1, 0, 0, 35)
+KillBtn.Text = "☠️ Kill All Players"
+KillBtn.Font = Enum.Font.Gotham
+KillBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+KillBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+Instance.new("UICorner", KillBtn).CornerRadius = UDim.new(0, 6)
+
+KillBtn.MouseButton1Click:Connect(function()
+    local remote = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes.Killers:FindFirstChild("Killer") and ReplicatedStorage.Remotes.Killers.Killer:FindFirstChild("FrenzyHitEvent")
+    if not remote then
+        KillBtn.Text = "❌ Remote Not Found"
+        task.delay(2, function()
+            KillBtn.Text = "☠️ Kill All Players"
+        end)
+        return
+    end
+
+    local count = 0
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            pcall(function()
+                remote:FireServer(player.Character)
+                count = count + 1
+            end)
+        end
+    end
+
+    KillBtn.Text = "☠️ Killed " .. count .. " Player(s)"
+    task.delay(2, function()
+        KillBtn.Text = "☠️ Kill All Players"
+    end)
+end)
+
 
 
 
