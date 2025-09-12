@@ -255,21 +255,32 @@ ResetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ResetBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 Instance.new("UICorner", ResetBtn).CornerRadius = UDim.new(0, 6)
 
--- Fungsi pindah semua SpawnLocation ke player
 local function moveAllSpawnToPlayer()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not root then return end
 
     local count = 0
+    local radius = 4 -- jarak antar objek
+
     for _, obj in ipairs(workspace:GetDescendants()) do
         if obj:IsA("SpawnLocation") or (obj:IsA("BasePart") and (obj.Name == "SpawnLocation" or obj.Name == "GeneratorPoint1" or obj.Name == "GeneratorPoint2" or obj.Name == "GeneratorPoint3" or obj.Name == "GeneratorPoint4")) then
             if not originalSpawnPositions[obj] then
                 originalSpawnPositions[obj] = obj.CFrame
             end
-            obj.CFrame = CFrame.new(root.Position.X, root.Position.Y + 1, root.Position.Z)
+
+            -- Hitung posisi offset melingkar
+            local angle = math.rad(count * 45) -- 8 arah melingkar
+            local offsetX = math.cos(angle) * radius
+            local offsetZ = math.sin(angle) * radius
+
+            local targetPos = root.Position + Vector3.new(offsetX, 1, offsetZ)
+            obj.CFrame = CFrame.new(targetPos)
+
             count = count + 1
         end
     end
+
+
 
     MoveSpawnerBtn.Text = "Moved " .. count .. " Spawn ✅"
     task.delay(2, function()
