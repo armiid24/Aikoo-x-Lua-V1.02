@@ -113,6 +113,7 @@ local PlayerPage, ServerPage, ScannerPage, ScannerObjectPage, SettingsPage, LogC
     createPage("Settings"), createPage("LogConsole"),
     createPage("ScannerPart")
 
+
 ServerPage.ClipsDescendants = true
 
 --// KONTEN HALAMAN-HALAMAN //--
@@ -1254,7 +1255,7 @@ end)
 --// FUNGSI GLOBAL UI (NAVIGASI, TEMA, DLL) //--
 function switchPage(pageName) for _, page in pairs(PageContainer:GetChildren()) do if page:IsA("Frame") then page.Visible = (page.Name == pageName) end end; local theme = Themes[currentThemeName]; for _, button in pairs(NavContainer:GetChildren()) do if button:IsA("TextButton") then button.BackgroundColor3 = (button.Name == pageName.."Nav") and theme.Accent or theme.AccentSecondary end end end
 function applyTheme(themeName) currentThemeName = themeName; local theme = Themes[themeName]; MainFrame.BackgroundColor3, MainFrame.BackgroundTransparency, UIStroke.Color = theme.Background, theme.BackgroundTransparency, theme.Border; TitleLabel.TextColor3 = theme.Text; PageContainer.BackgroundColor3, PageStroke.Color = theme.AccentSecondary, theme.Border; MinimizeButton.BackgroundColor3, MinimizeButton.TextColor3 = theme.AccentSecondary, theme.Text; local function themeInteractive(e) if e:IsA("TextButton") then e.BackgroundColor3, e.TextColor3 = theme.Accent, theme.Text elseif e:IsA("TextBox") then e.BackgroundColor3, e.TextColor3, e.PlaceholderColor3 = theme.AccentSecondary, theme.Text, Color3.new(theme.Text.r,theme.Text.g,theme.Text.b)*0.7 end if e:FindFirstChildOfClass("UIStroke") then e.UIStroke.Color=theme.Border end end; for _, p in ipairs({PlayerPage,ServerPage,ScannerPage,SettingsPage}) do for _,c in ipairs(p:GetDescendants()) do if c:IsA("TextButton") or c:IsA("TextBox") then themeInteractive(c) end end end; for _,c in ipairs(NavContainer:GetChildren()) do if c:IsA("TextButton") then c.TextColor3 = theme.Text end end; for _,p in ipairs(PageContainer:GetChildren()) do if p.Visible then switchPage(p.Name) break end end end
-local navButtons = {"Player", "Server", "Scanner", "Settings", "ScannerObject", "LogConsole"}
+local navButtons = {"Player", "Server", "Scanner", "Settings", "ScannerObject", "LogConsole", "ScannerPart"}
 for i, name in ipairs(navButtons) do
     local NavButton = Instance.new("TextButton", NavContainer)
     NavButton.Name, NavButton.Size, NavButton.Font, NavButton.Text =
