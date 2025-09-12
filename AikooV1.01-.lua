@@ -232,12 +232,10 @@ createToggleButton(ScrollContainer, "ESP Username [OFF]", function(btn)
 end)
 
 
-    --move objek
-
--- Simpan posisi awal semua SpawnLocation
+-- 🧠 Simpan posisi awal semua SpawnLocation
 local originalSpawnPositions = {}
 
--- Tombol utama: Move SpawnLocation
+-- 📍 Tombol utama: Move SpawnLocation
 local MoveSpawnerBtn = Instance.new("TextButton", ScrollContainer)
 MoveSpawnerBtn.Size = UDim2.new(0.8, 0, 0, 35)
 MoveSpawnerBtn.Text = "📍 Move All SpawnLocation to Player"
@@ -246,7 +244,7 @@ MoveSpawnerBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 MoveSpawnerBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 Instance.new("UICorner", MoveSpawnerBtn).CornerRadius = UDim.new(0, 6)
 
--- Tombol reset: Balikin ke posisi awal
+-- 🔁 Tombol reset: Balikin ke posisi awal
 local ResetBtn = Instance.new("TextButton", ScrollContainer)
 ResetBtn.Size = UDim2.new(0.8, 0, 0, 35)
 ResetBtn.Text = "🔁 Reset SpawnLocation"
@@ -255,12 +253,13 @@ ResetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ResetBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 Instance.new("UICorner", ResetBtn).CornerRadius = UDim.new(0, 6)
 
+-- 📦 Fungsi pindah semua SpawnLocation ke sekitar player
 local function moveAllSpawnToPlayer()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not root then return end
 
     local count = 0
-    local radius = 4 -- jarak antar objek
+    local radius = 4
 
     for _, obj in ipairs(workspace:GetDescendants()) do
         if obj:IsA("SpawnLocation") or (obj:IsA("BasePart") and (obj.Name == "SpawnLocation" or obj.Name == "GeneratorPoint1" or obj.Name == "GeneratorPoint2" or obj.Name == "GeneratorPoint3" or obj.Name == "GeneratorPoint4")) then
@@ -269,18 +268,17 @@ local function moveAllSpawnToPlayer()
             end
 
             -- Hitung posisi offset melingkar
-            local angle = math.rad(count * 45) -- 8 arah melingkar
+            local angle = math.rad(count * 45)
             local offsetX = math.cos(angle) * radius
             local offsetZ = math.sin(angle) * radius
+            local dropY = root.Position.Y - (obj.Size.Y / 2)
 
-            local targetPos = root.Position + Vector3.new(offsetX, 1, offsetZ)
+            local targetPos = Vector3.new(root.Position.X + offsetX, dropY, root.Position.Z + offsetZ)
             obj.CFrame = CFrame.new(targetPos)
 
             count = count + 1
         end
     end
-
-
 
     MoveSpawnerBtn.Text = "Moved " .. count .. " Spawn ✅"
     task.delay(2, function()
@@ -288,11 +286,11 @@ local function moveAllSpawnToPlayer()
     end)
 end
 
--- Fungsi reset posisi semua SpawnLocation
+-- 🔁 Fungsi reset posisi semua SpawnLocation
 local function resetAllSpawn()
     local count = 0
     for obj, cframe in pairs(originalSpawnPositions) do
-        if obj and obj:IsA("BasePart") then
+        if obj and obj:IsA("BasePart") and obj.Parent then
             obj.CFrame = cframe
             count = count + 1
         end
@@ -303,6 +301,11 @@ local function resetAllSpawn()
         ResetBtn.Text = "🔁 Reset SpawnLocation"
     end)
 end
+
+-- 🔗 Hubungkan tombol ke fungsi
+MoveSpawnerBtn.MouseButton1Click:Connect(moveAllSpawnToPlayer)
+ResetBtn.MouseButton1Click:Connect(resetAllSpawn)
+
 
 -- Klik kiri → pindah
 MoveSpawnerBtn.MouseButton1Click:Connect(moveAllSpawnToPlayer)
