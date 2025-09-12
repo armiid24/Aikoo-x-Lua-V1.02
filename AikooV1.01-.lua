@@ -107,10 +107,11 @@ local PageStroke = Instance.new("UIStroke", PageContainer)
 
 --// PEMBUATAN HALAMAN-HALAMAN //--
 local function createPage(name) local page = Instance.new("Frame", PageContainer); page.Name = name; page.Size = UDim2.new(1, 0, 1, 0); page.BackgroundTransparency = 1; page.Visible = false; return page end
-local PlayerPage, ServerPage, ScannerPage, ScannerObjectPage, SettingsPage, LogConsolePage =
+local PlayerPage, ServerPage, ScannerPage, ScannerObjectPage, SettingsPage, LogConsolePage, ScannerPartPage =
     createPage("Player"), createPage("Server"),
     createPage("Scanner"), createPage("ScannerObject"),
-    createPage("Settings"), createPage("LogConsole")
+    createPage("Settings"), createPage("LogConsole"),
+    createPage("ScannerPart")
 
 ServerPage.ClipsDescendants = true
 
@@ -1177,7 +1178,77 @@ RefreshBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
+-- Scanner Part Page
+local ScannerPartList = {}
 
+local Scroll = Instance.new("ScrollingFrame", ScannerPartPage)
+Scroll.Size = UDim2.new(1, 0, 1, 0)
+Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+Scroll.BackgroundTransparency = 1
+Scroll.ScrollBarThickness = 4
+
+local UIList = Instance.new("UIListLayout", Scroll)
+UIList.Padding = UDim.new(0, 6)
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Tombol Scan
+local ScanBtn = Instance.new("TextButton", Scroll)
+ScanBtn.Size = UDim2.new(0.8, 0, 0, 35)
+ScanBtn.Text = "🔍 Scan Interaktif Part"
+ScanBtn.Font = Enum.Font.Gotham
+ScanBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ScanBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+Instance.new("UICorner", ScanBtn).CornerRadius = UDim.new(0, 6)
+
+-- Tombol Copy
+local CopyBtn = Instance.new("TextButton", Scroll)
+CopyBtn.Size = UDim2.new(0.8, 0, 0, 35)
+CopyBtn.Text = "📋 Copy Semua Data"
+CopyBtn.Font = Enum.Font.Gotham
+CopyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CopyBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Instance.new("UICorner", CopyBtn).CornerRadius = UDim.new(0, 6)
+
+-- Label hasil
+local ResultLabel = Instance.new("TextLabel", Scroll)
+ResultLabel.Size = UDim2.new(0.8, 0, 0, 30)
+ResultLabel.Text = "Belum scan apa-apa"
+ResultLabel.Font = Enum.Font.Gotham
+ResultLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+ResultLabel.BackgroundTransparency = 1
+ResultLabel.TextScaled = true
+
+-- Fungsi scan part
+ScanBtn.MouseButton1Click:Connect(function()
+    table.clear(ScannerPartList)
+
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and (obj.Name:match("Generator") or obj.Name:match("Escape") or obj.Name:match("Trap") or obj.Name:match("ItemSpawn")) then
+            local pos = obj.Position
+            table.insert(ScannerPartList, obj.Name .. " @ (" .. math.floor(pos.X) .. ", " .. math.floor(pos.Y) .. ", " .. math.floor(pos.Z) .. ")")
+        end
+    end
+
+    ResultLabel.Text = "✅ Ditemukan: " .. #ScannerPartList .. " objek"
+end)
+
+CopyBtn.MouseButton1Click:Connect(function()
+    if #ScannerPartList == 0 then
+        CopyBtn.Text = "⚠️ Belum ada data"
+        task.delay(2, function()
+            CopyBtn.Text = "📋 Copy Semua Data"
+        end)
+        return
+    end
+
+    local text = table.concat(ScannerPartList, "\n")
+    setclipboard(text)
+
+    CopyBtn.Text = "✅ Copied!"
+    task.delay(2, function()
+        CopyBtn.Text = "📋 Copy Semua Data"
+    end)
+end)
 
 
 --// FUNGSI GLOBAL UI (NAVIGASI, TEMA, DLL) //--
