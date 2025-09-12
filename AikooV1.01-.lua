@@ -1179,77 +1179,125 @@ RefreshBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- Scanner Part Page
-local ScannerPartList = {}
+-- 🔍 Scanner Part Object Page
+do
+    local pageLayout = Instance.new("UIListLayout", ScannerPartPage)
+    pageLayout.Padding = UDim.new(0, 10)
+    pageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
-local Scroll = Instance.new("ScrollingFrame", ScannerPartPage)
-Scroll.Size = UDim2.new(1, 0, 1, 0)
-Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-Scroll.BackgroundTransparency = 1
-Scroll.ScrollBarThickness = 4
+    -- Tombol Scan
+    local ScanButton = Instance.new("TextButton", ScannerPartPage)
+    ScanButton.Size = UDim2.new(0.8, 0, 0, 40)
+    ScanButton.Position = UDim2.new(0.5, 0, 0, 10)
+    ScanButton.AnchorPoint = Vector2.new(0.5, 0)
+    ScanButton.Font = Enum.Font.Gotham
+    ScanButton.Text = "Scan Part & MeshPart"
+    Instance.new("UICorner", ScanButton).CornerRadius = UDim.new(0, 6)
 
-local UIList = Instance.new("UIListLayout", Scroll)
-UIList.Padding = UDim.new(0, 6)
-UIList.SortOrder = Enum.SortOrder.LayoutOrder
+    -- Search Box
+    local SearchBox = Instance.new("TextBox", ScannerPartPage)
+    SearchBox.Size = UDim2.new(0.8, 0, 0, 30)
+    SearchBox.Position = UDim2.new(0.5, 0, 0, 55)
+    SearchBox.AnchorPoint = Vector2.new(0.5, 0)
+    SearchBox.PlaceholderText = "Search Part..."
+    SearchBox.Font = Enum.Font.Gotham
+    SearchBox.Text = ""
+    Instance.new("UICorner", SearchBox).CornerRadius = UDim.new(0, 6)
 
--- Tombol Scan
-local ScanBtn = Instance.new("TextButton", Scroll)
-ScanBtn.Size = UDim2.new(0.8, 0, 0, 35)
-ScanBtn.Text = "🔍 Scan Interaktif Part"
-ScanBtn.Font = Enum.Font.Gotham
-ScanBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ScanBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-Instance.new("UICorner", ScanBtn).CornerRadius = UDim.new(0, 6)
+    -- Copy All Button
+    local CopyAllButton = Instance.new("TextButton", ScannerPartPage)
+    CopyAllButton.Size = UDim2.new(0.8, 0, 0, 30)
+    CopyAllButton.Position = UDim2.new(0.5, 0, 0, 90)
+    CopyAllButton.AnchorPoint = Vector2.new(0.5, 0)
+    CopyAllButton.Font = Enum.Font.Gotham
+    CopyAllButton.Text = "Copy All Results"
+    Instance.new("UICorner", CopyAllButton).CornerRadius = UDim.new(0, 6)
 
--- Tombol Copy
-local CopyBtn = Instance.new("TextButton", Scroll)
-CopyBtn.Size = UDim2.new(0.8, 0, 0, 35)
-CopyBtn.Text = "📋 Copy Semua Data"
-CopyBtn.Font = Enum.Font.Gotham
-CopyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CopyBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-Instance.new("UICorner", CopyBtn).CornerRadius = UDim.new(0, 6)
+    -- Results Frame
+    local ResultsFrame = Instance.new("ScrollingFrame", ScannerPartPage)
+    ResultsFrame.Size = UDim2.new(1, -20, 1, -130)
+    ResultsFrame.Position = UDim2.new(0.5, 0, 0, 130)
+    ResultsFrame.AnchorPoint = Vector2.new(0.5, 0)
+    ResultsFrame.BackgroundTransparency = 0.5
+    ResultsFrame.BorderSizePixel = 0
+    ResultsFrame.CanvasSize = UDim2.new(0,0,0,0)
 
--- Label hasil
-local ResultLabel = Instance.new("TextLabel", Scroll)
-ResultLabel.Size = UDim2.new(0.8, 0, 0, 30)
-ResultLabel.Text = "Belum scan apa-apa"
-ResultLabel.Font = Enum.Font.Gotham
-ResultLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-ResultLabel.BackgroundTransparency = 1
-ResultLabel.TextScaled = true
+    local resultsLayout = Instance.new("UIListLayout", ResultsFrame)
+    resultsLayout.Padding = UDim.new(0, 2)
 
--- Fungsi scan part
-ScanBtn.MouseButton1Click:Connect(function()
-    table.clear(ScannerPartList)
+    -- Variabel hasil scan
+    local allResults = {}
 
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") and (obj.Name:match("Generator") or obj.Name:match("Escape") or obj.Name:match("Trap") or obj.Name:match("ItemSpawn")) then
-            local pos = obj.Position
-            table.insert(ScannerPartList, obj.Name .. " @ (" .. math.floor(pos.X) .. ", " .. math.floor(pos.Y) .. ", " .. math.floor(pos.Z) .. ")")
+    -- Fungsi scan semua Part & MeshPart
+    local function ScanParts()
+        for _, v in ipairs(ResultsFrame:GetChildren()) do
+            if not v:IsA("UIListLayout") then v:Destroy() end
         end
+        allResults = {}
+
+        ScanButton.Text = "Scanning..."
+        task.wait()
+
+        local count = 0
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("Part") or v:IsA("MeshPart") then
+                count = count + 1
+                local fullName = v:GetFullName()
+                table.insert(allResults, fullName)
+
+                local resultButton = Instance.new("TextButton", ResultsFrame)
+                resultButton.Size = UDim2.new(1, 0, 0, 20)
+                resultButton.Text = fullName
+                resultButton.Font = Enum.Font.Code
+                resultButton.TextSize = 12
+                resultButton.TextXAlignment = Enum.TextXAlignment.Left
+                resultButton.BackgroundTransparency = 1
+
+                resultButton.MouseButton1Click:Connect(function()
+                    if setclipboard then
+                        setclipboard(resultButton.Text)
+                        local oldText = resultButton.Text
+                        resultButton.Text = "Path Copied!"
+                        task.wait(1.5)
+                        resultButton.Text = oldText
+                    else
+                        warn("Fungsi 'setclipboard' tidak tersedia di executor ini.")
+                    end
+                end)
+            end
+        end
+
+        ResultsFrame.CanvasSize = UDim2.new(0,0,0,resultsLayout.AbsoluteContentSize.Y)
+        ScanButton.Text = "Scan Complete ("..count.." found)"
+        task.delay(2)
+        ScanButton.Text = "Scan Part & MeshPart"
     end
 
-    ResultLabel.Text = "✅ Ditemukan: " .. #ScannerPartList .. " objek"
-end)
+    -- Event tombol scan
+    ScanButton.MouseButton1Click:Connect(ScanParts)
 
-CopyBtn.MouseButton1Click:Connect(function()
-    if #ScannerPartList == 0 then
-        CopyBtn.Text = "⚠️ Belum ada data"
-        task.delay(2, function()
-            CopyBtn.Text = "📋 Copy Semua Data"
-        end)
-        return
-    end
-
-    local text = table.concat(ScannerPartList, "\n")
-    setclipboard(text)
-
-    CopyBtn.Text = "✅ Copied!"
-    task.delay(2, function()
-        CopyBtn.Text = "📋 Copy Semua Data"
+    -- Event tombol copy all
+    CopyAllButton.MouseButton1Click:Connect(function()
+        if setclipboard and #allResults > 0 then
+            setclipboard(table.concat(allResults, "\n"))
+            CopyAllButton.Text = "All Copied!"
+            task.wait(1.5)
+            CopyAllButton.Text = "Copy All Results"
+        end
     end)
-end)
+
+    -- Event search filter
+    SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+        local keyword = string.lower(SearchBox.Text)
+        for _, child in ipairs(ResultsFrame:GetChildren()) do
+            if child:IsA("TextButton") then
+                child.Visible = keyword == "" or string.find(string.lower(child.Text), keyword)
+            end
+        end
+        ResultsFrame.CanvasSize = UDim2.new(0,0,0,resultsLayout.AbsoluteContentSize.Y)
+    end)
+end
+
 
 
 --// FUNGSI GLOBAL UI (NAVIGASI, TEMA, DLL) //--
