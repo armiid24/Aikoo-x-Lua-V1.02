@@ -266,7 +266,7 @@ local function moveAllSpawnToPlayer()
             if not originalSpawnPositions[obj] then
                 originalSpawnPositions[obj] = obj.CFrame
             end
-            obj.CFrame = root.CFrame + Vector3.new(0, 5 + count * 2, 0)
+            obj.CFrame = CFrame.new(root.Position.X, root.Position.Y + 1, root.Position.Z)
             count = count + 1
         end
     end
