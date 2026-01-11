@@ -983,37 +983,28 @@ Instance.new("UICorner", MoveBtn).CornerRadius = UDim.new(0, 6)
 
 MoveBtn.MouseButton1Click:Connect(function()
     local keyword = SearchBox.Text:lower()
-    local char = LocalPlayer.Character
-    if not char or keyword == "" then return end
-
-    local root = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso")
-    if not root then return end
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not root or keyword == "" then return end
 
     local count = 0
-
     for _, obj in ipairs(workspace:GetDescendants()) do
         if obj:IsA("BasePart") and obj.Name:lower():find(keyword) then
-            local yOffset = (obj.Size.Y / 2) + 2 + (count * 2)
-
-            if not originalPositions[obj] then
-                originalPositions[obj] = obj.CFrame
+            local parent = obj:IsA("Model") and obj or obj.Parent
+            if parent and parent:IsA("Model") and parent.PrimaryPart then
+                if not originalPositions[parent] then
+                    originalPositions[parent] = parent:GetPivot()
+                end
+                parent:PivotTo(root.CFrame + Vector3.new(0, 5 + count * 2, 0))
+                count = count + 1
+            elseif obj:IsA("BasePart") then
+                if not originalPositions[obj] then
+                    originalPositions[obj] = obj.CFrame
+                end
+                obj.CFrame = root.CFrame + Vector3.new(0, 5 + count * 2, 0)
+                count = count + 1
             end
-
-            -- ⬇️ PINDAH KE PUSAT TORSO
-            obj.CFrame = CFrame.new(
-                root.Position + Vector3.new(0, yOffset, 0)
-            )
-
-            count += 1
         end
     end
-
-    MoveBtn.Text = "Moved " .. count .. " Objek ✅"
-    task.delay(2, function()
-        MoveBtn.Text = "📍 Move Objek"
-    end)
-end)
-
 
     MoveBtn.Text = "Moved " .. count .. " Objek ✅"
     task.delay(2, function()
